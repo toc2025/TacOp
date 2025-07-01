@@ -1,0 +1,53 @@
+{
+  "port": 80,
+  "baseURL": "",
+  "address": "0.0.0.0",
+  "log": "stdout",
+  "database": "/database/filebrowser.db",
+  "root": "/srv",
+  "username": "admin",
+  "password": "tactical2025",
+  "scope": ".",
+  "allowCommands": false,
+  "allowEdit": true,
+  "allowNew": true,
+  "commands": [],
+  "shell": [],
+  "rules": [
+    {
+      "type": "deny",
+      "regex": "^\\..*"
+    }
+  ],
+  "branding": {
+    "name": "Tactical FileBrowser",
+    "disableExternal": true,
+    "files": "/srv",
+    "theme": "dark"
+  },
+  "signup": false,
+  "createUserDir": false,
+  "defaults": {
+    "scope": ".",
+    "locale": "en",
+    "viewMode": "list",
+    "singleClick": false,
+    "sorting": {
+      "by": "name",
+      "asc": true
+    },
+    "perm": {
+      "admin": false,
+      "execute": false,
+      "create": true,
+      "rename": true,
+      "modify": true,
+      "delete": true,
+      "share": false,
+      "download": true
+    },
+    "commands": [],
+    "hideDotfiles": true,
+    "dateFormat": false
+  }
+}

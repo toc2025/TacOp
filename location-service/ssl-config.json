@@ -1,0 +1,191 @@
+{
+  "ssl": {
+    "enabled": true,
+    "certificatePath": "./certs/tactical.crt",
+    "privateKeyPath": "./certs/tactical.key",
+    "caPath": "./certs/ca.crt",
+    "passphrase": null,
+    "protocols": [
+      "TLSv1.3",
+      "TLSv1.2"
+    ],
+    "ciphers": [
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "ECDHE-RSA-AES128-GCM-SHA256",
+      "ECDHE-RSA-AES256-SHA384",
+      "ECDHE-RSA-AES128-SHA256",
+      "ECDHE-RSA-AES256-SHA",
+      "ECDHE-RSA-AES128-SHA",
+      "DHE-RSA-AES256-GCM-SHA384",
+      "DHE-RSA-AES128-GCM-SHA256",
+      "DHE-RSA-AES256-SHA256",
+      "DHE-RSA-AES128-SHA256",
+      "DHE-RSA-AES256-SHA",
+      "DHE-RSA-AES128-SHA",
+      "!aNULL",
+      "!eNULL",
+      "!EXPORT",
+      "!DES",
+      "!RC4",
+      "!MD5",
+      "!PSK",
+      "!SRP",
+      "!CAMELLIA"
+    ],
+    "honorCipherOrder": true,
+    "secureOptions": [
+      "SSL_OP_NO_SSLv2",
+      "SSL_OP_NO_SSLv3",
+      "SSL_OP_NO_TLSv1",
+      "SSL_OP_NO_TLSv1_1"
+    ]
+  },
+  "certificateGeneration": {
+    "selfSigned": {
+      "enabled": true,
+      "keySize": 2048,
+      "validityDays": 365,
+      "subject": {
+        "country": "US",
+        "state": "Tactical",
+        "locality": "Field",
+        "organization": "TacticalOps",
+        "organizationalUnit": "Location Services",
+        "commonName": "tactical.local",
+        "emailAddress": "admin@tactical.local"
+      },
+      "extensions": {
+        "subjectAltName": [
+          "DNS:tactical.local",
+          "DNS:*.tactical.local",
+          "IP:192.168.100.1",
+          "IP:127.0.0.1",
+          "IP:::1"
+        ],
+        "keyUsage": [
+          "digitalSignature",
+          "keyEncipherment",
+          "keyAgreement"
+        ],
+        "extendedKeyUsage": [
+          "serverAuth",
+          "clientAuth"
+        ],
+        "basicConstraints": "CA:FALSE",
+        "subjectKeyIdentifier": "hash",
+        "authorityKeyIdentifier": "keyid,issuer"
+      }
+    },
+    "letsEncrypt": {
+      "enabled": false,
+      "email": "admin@tactical.local",
+      "domains": [
+        "tactical.local"
+      ],
+      "staging": false,
+      "renewalDays": 30
+    }
+  },
+  "websocket": {
+    "ssl": {
+      "enabled": true,
+      "rejectUnauthorized": false,
+      "requestCert": false,
+      "agent": false,
+      "secureProtocol": "TLSv1_3_method"
+    },
+    "compression": {
+      "enabled": true,
+      "threshold": 1024,
+      "level": 6,
+      "memLevel": 8
+    }
+  },
+  "api": {
+    "ssl": {
+      "enabled": true,
+      "redirectHttp": true,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubDomains": true,
+      "hstsPreload": true
+    },
+    "cors": {
+      "credentials": true,
+      "optionsSuccessStatus": 200,
+      "preflightContinue": false
+    }
+  },
+  "security": {
+    "headers": {
+      "contentSecurityPolicy": {
+        "directives": {
+          "defaultSrc": ["'self'"],
+          "scriptSrc": ["'self'", "'unsafe-inline'"],
+          "styleSrc": ["'self'", "'unsafe-inline'"],
+          "imgSrc": ["'self'", "data:", "https:"],
+          "connectSrc": ["'self'", "wss:", "ws:"],
+          "fontSrc": ["'self'"],
+          "objectSrc": ["'none'"],
+          "mediaSrc": ["'self'"],
+          "frameSrc": ["'none'"]
+        }
+      },
+      "strictTransportSecurity": {
+        "maxAge": 31536000,
+        "includeSubDomains": true,
+        "preload": true
+      },
+      "xFrameOptions": "DENY",
+      "xContentTypeOptions": "nosniff",
+      "referrerPolicy": "strict-origin-when-cross-origin",
+      "permissionsPolicy": {
+        "geolocation": ["self"],
+        "camera": ["none"],
+        "microphone": ["none"],
+        "payment": ["none"],
+        "usb": ["none"]
+      }
+    },
+    "rateLimiting": {
+      "windowMs": 900000,
+      "max": 100,
+      "message": "Too many requests from this IP",
+      "standardHeaders": true,
+      "legacyHeaders": false,
+      "skipSuccessfulRequests": false,
+      "skipFailedRequests": false
+    }
+  },
+  "monitoring": {
+    "ssl": {
+      "certificateExpiry": {
+        "enabled": true,
+        "warningDays": 30,
+        "criticalDays": 7,
+        "checkInterval": 86400000
+      },
+      "cipherSuite": {
+        "enabled": true,
+        "logWeakCiphers": true,
+        "blockWeakCiphers": true
+      },
+      "protocolVersion": {
+        "enabled": true,
+        "minimumVersion": "TLSv1.2",
+        "logOldProtocols": true
+      }
+    }
+  },
+  "development": {
+    "allowSelfSigned": true,
+    "allowInsecureConnections": false,
+    "logTlsErrors": true,
+    "verboseLogging": false
+  },
+  "production": {
+    "allowSelfSigned": false,
+    "allowInsecureConnections": false,
+    "enforceStrictSsl": true,
+    "logTlsErrors": false
+  }
+}

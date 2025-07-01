@@ -1,0 +1,213 @@
+{
+  "server": {
+    "port": 8443,
+    "host": "0.0.0.0",
+    "maxClients": 5,
+    "heartbeatInterval": 30000,
+    "connectionTimeout": 60000
+  },
+  "api": {
+    "port": 3002,
+    "host": "0.0.0.0",
+    "corsOrigins": [
+      "https://tactical.local",
+      "https://192.168.100.1",
+      "http://localhost:3000"
+    ],
+    "rateLimit": {
+      "windowMs": 900000,
+      "max": 100
+    }
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "tactical_location",
+    "user": "tactical",
+    "password": "TacticalSecure2025!",
+    "pool": {
+      "min": 2,
+      "max": 10,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    }
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "password": "TacticalRedis2025!",
+    "db": 0,
+    "keyPrefix": "tactical:location:"
+  },
+  "ssl": {
+    "cert": "./certs/tactical.crt",
+    "key": "./certs/tactical.key",
+    "protocols": ["TLSv1.3"],
+    "ciphers": [
+      "ECDHE+AESGCM",
+      "ECDHE+CHACHA20",
+      "DHE+AESGCM",
+      "DHE+CHACHA20",
+      "!aNULL",
+      "!MD5",
+      "!DSS"
+    ]
+  },
+  "location": {
+    "updateIntervals": {
+      "default": 30000,
+      "minimum": 1000,
+      "maximum": 300000,
+      "emergency": 5000
+    },
+    "accuracy": {
+      "high": true,
+      "timeout": 10000,
+      "maximumAge": 30000
+    },
+    "batteryOptimization": {
+      "enabled": true,
+      "lowBatteryThreshold": 0.2,
+      "backgroundMultiplier": 2,
+      "stationaryMultiplier": 3,
+      "stationaryTimeout": 300000
+    },
+    "movement": {
+      "detectionThreshold": 10,
+      "stationaryTimeout": 60000
+    }
+  },
+  "security": {
+    "encryption": {
+      "algorithm": "aes-256-gcm",
+      "keyRotationInterval": 86400000
+    },
+    "authentication": {
+      "required": true,
+      "tokenExpiry": 3600000,
+      "maxFailedAttempts": 3,
+      "lockoutDuration": 900000
+    },
+    "deviceFingerprinting": {
+      "enabled": true,
+      "components": [
+        "userAgent",
+        "language",
+        "screenResolution",
+        "timezone",
+        "canvas"
+      ]
+    }
+  },
+  "storage": {
+    "dataRetention": {
+      "locationUpdates": "24 hours",
+      "emergencyAlerts": "7 days",
+      "waypoints": "permanent",
+      "deviceInfo": "30 days"
+    },
+    "cleanup": {
+      "interval": 21600000,
+      "batchSize": 1000
+    },
+    "offline": {
+      "enabled": true,
+      "maxQueueSize": 100,
+      "syncBatchSize": 10,
+      "syncInterval": 1000
+    }
+  },
+  "monitoring": {
+    "healthCheck": {
+      "interval": 30000,
+      "timeout": 5000
+    },
+    "metrics": {
+      "enabled": true,
+      "interval": 60000,
+      "retention": "24 hours"
+    },
+    "alerts": {
+      "enabled": true,
+      "thresholds": {
+        "connectionFailures": 5,
+        "databaseErrors": 3,
+        "highLatency": 5000,
+        "lowBattery": 0.1
+      }
+    }
+  },
+  "zerotier": {
+    "networkId": "${ZEROTIER_NETWORK_ID}",
+    "subnet": "192.168.100.0/24",
+    "controllerUrl": "http://localhost:9993",
+    "deviceAuthorization": "manual"
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "file": {
+      "enabled": true,
+      "path": "./logs/location-service.log",
+      "maxSize": "10MB",
+      "maxFiles": 5,
+      "rotateDaily": true
+    },
+    "console": {
+      "enabled": true,
+      "colorize": true
+    }
+  },
+  "features": {
+    "emergencyMode": {
+      "enabled": true,
+      "forceHighAccuracy": true,
+      "updateInterval": 5000,
+      "disableBatteryOptimization": true
+    },
+    "geofencing": {
+      "enabled": false,
+      "alertRadius": 1000
+    },
+    "trackingHistory": {
+      "enabled": true,
+      "maxPoints": 1000,
+      "compressionEnabled": true
+    },
+    "teamTracking": {
+      "enabled": true,
+      "maxTeamSize": 5,
+      "proximityAlerts": false
+    }
+  },
+  "performance": {
+    "websocket": {
+      "maxPayload": 16384,
+      "compression": true,
+      "pingInterval": 30000,
+      "pongTimeout": 5000
+    },
+    "database": {
+      "queryTimeout": 5000,
+      "maxConnections": 10,
+      "connectionRetries": 3
+    },
+    "cache": {
+      "ttl": 300000,
+      "maxKeys": 10000,
+      "checkPeriod": 60000
+    }
+  },
+  "development": {
+    "mockData": {
+      "enabled": false,
+      "teamSize": 4,
+      "updateInterval": 10000
+    },
+    "debugging": {
+      "verbose": false,
+      "logQueries": false,
+      "logWebSocketMessages": false
+    }
+  }
+}

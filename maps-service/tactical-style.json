@@ -1,0 +1,322 @@
+{
+  "version": 8,
+  "name": "Tactical Operations Style",
+  "metadata": {
+    "mapbox:autocomposite": true,
+    "mapbox:type": "template",
+    "mapbox:groups": {
+      "tactical": {
+        "name": "Tactical Overlays",
+        "collapsed": false
+      },
+      "terrain": {
+        "name": "Terrain",
+        "collapsed": false
+      },
+      "infrastructure": {
+        "name": "Infrastructure",
+        "collapsed": false
+      }
+    }
+  },
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "mbtiles://./data/tactical.mbtiles"
+    },
+    "team-locations": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
+    "waypoints": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
+    "tactical-overlays": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    }
+  },
+  "sprite": "sprites/tactical",
+  "glyphs": "fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#1a1a1a"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "filter": ["==", "$type", "Polygon"],
+      "paint": {
+        "fill-color": "#0f3460",
+        "fill-opacity": 0.8
+      }
+    },
+    {
+      "id": "landcover-forest",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["==", "class", "forest"],
+      "paint": {
+        "fill-color": "#2d4a2b",
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "id": "landcover-grass",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["==", "class", "grass"],
+      "paint": {
+        "fill-color": "#3a5c38",
+        "fill-opacity": 0.6
+      }
+    },
+    {
+      "id": "landuse-residential",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "residential"],
+      "paint": {
+        "fill-color": "#4a4a4a",
+        "fill-opacity": 0.5
+      }
+    },
+    {
+      "id": "landuse-commercial",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "commercial"],
+      "paint": {
+        "fill-color": "#5a4a3a",
+        "fill-opacity": 0.5
+      }
+    },
+    {
+      "id": "landuse-industrial",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landuse",
+      "filter": ["==", "class", "industrial"],
+      "paint": {
+        "fill-color": "#6a5a4a",
+        "fill-opacity": 0.5
+      }
+    },
+    {
+      "id": "roads-minor",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "minor", "service"],
+      "paint": {
+        "line-color": "#666666",
+        "line-width": {
+          "base": 1.2,
+          "stops": [[12, 0.5], [20, 8]]
+        }
+      }
+    },
+    {
+      "id": "roads-major",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "primary", "secondary", "tertiary"],
+      "paint": {
+        "line-color": "#888888",
+        "line-width": {
+          "base": 1.2,
+          "stops": [[10, 1], [20, 12]]
+        }
+      }
+    },
+    {
+      "id": "roads-highway",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["==", "class", "motorway"],
+      "paint": {
+        "line-color": "#aaaaaa",
+        "line-width": {
+          "base": 1.2,
+          "stops": [[8, 2], [20, 16]]
+        }
+      }
+    },
+    {
+      "id": "buildings",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 12,
+      "paint": {
+        "fill-color": "#3a3a3a",
+        "fill-opacity": 0.8,
+        "fill-outline-color": "#555555"
+      }
+    },
+    {
+      "id": "buildings-3d",
+      "type": "fill-extrusion",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 15,
+      "paint": {
+        "fill-extrusion-color": "#3a3a3a",
+        "fill-extrusion-height": {
+          "property": "render_height",
+          "type": "identity"
+        },
+        "fill-extrusion-base": {
+          "property": "render_min_height",
+          "type": "identity"
+        },
+        "fill-extrusion-opacity": 0.8
+      }
+    },
+    {
+      "id": "place-labels",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "filter": ["in", "class", "city", "town", "village"],
+      "layout": {
+        "text-field": "{name}",
+        "text-font": ["Noto Sans Regular"],
+        "text-size": {
+          "stops": [[10, 12], [16, 16]]
+        },
+        "text-anchor": "center"
+      },
+      "paint": {
+        "text-color": "#cccccc",
+        "text-halo-color": "#000000",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "team-locations-circle",
+      "type": "circle",
+      "source": "team-locations",
+      "paint": {
+        "circle-radius": {
+          "base": 1.2,
+          "stops": [[10, 8], [18, 16]]
+        },
+        "circle-color": [
+          "case",
+          ["==", ["get", "status"], "active"], "#00ff00",
+          ["==", ["get", "status"], "inactive"], "#ffaa00",
+          "#ff0000"
+        ],
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 2,
+        "circle-opacity": 0.9
+      }
+    },
+    {
+      "id": "team-locations-label",
+      "type": "symbol",
+      "source": "team-locations",
+      "layout": {
+        "text-field": "{callsign}",
+        "text-font": ["Noto Sans Bold"],
+        "text-size": 12,
+        "text-anchor": "top",
+        "text-offset": [0, 1.5]
+      },
+      "paint": {
+        "text-color": "#ffffff",
+        "text-halo-color": "#000000",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "waypoints-circle",
+      "type": "circle",
+      "source": "waypoints",
+      "paint": {
+        "circle-radius": 6,
+        "circle-color": "#ffff00",
+        "circle-stroke-color": "#000000",
+        "circle-stroke-width": 2
+      }
+    },
+    {
+      "id": "waypoints-label",
+      "type": "symbol",
+      "source": "waypoints",
+      "layout": {
+        "text-field": "{name}",
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 10,
+        "text-anchor": "top",
+        "text-offset": [0, 1]
+      },
+      "paint": {
+        "text-color": "#ffff00",
+        "text-halo-color": "#000000",
+        "text-halo-width": 2
+      }
+    },
+    {
+      "id": "tactical-overlays-fill",
+      "type": "fill",
+      "source": "tactical-overlays",
+      "filter": ["==", "$type", "Polygon"],
+      "paint": {
+        "fill-color": [
+          "case",
+          ["==", ["get", "type"], "restricted"], "#ff000040",
+          ["==", ["get", "type"], "objective"], "#00ff0040",
+          ["==", ["get", "type"], "patrol"], "#0000ff40",
+          "#ffffff40"
+        ],
+        "fill-outline-color": [
+          "case",
+          ["==", ["get", "type"], "restricted"], "#ff0000",
+          ["==", ["get", "type"], "objective"], "#00ff00",
+          ["==", ["get", "type"], "patrol"], "#0000ff",
+          "#ffffff"
+        ]
+      }
+    },
+    {
+      "id": "tactical-overlays-line",
+      "type": "line",
+      "source": "tactical-overlays",
+      "filter": ["==", "$type", "LineString"],
+      "paint": {
+        "line-color": [
+          "case",
+          ["==", ["get", "type"], "route"], "#ffff00",
+          ["==", ["get", "type"], "boundary"], "#ff0000",
+          "#ffffff"
+        ],
+        "line-width": 3,
+        "line-dasharray": [2, 2]
+      }
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "zerotier": {
+    "enabled": true,
+    "networkId": "${ZEROTIER_NETWORK_ID}",
+    "networkName": "TacticalOps",
+    "controller": {
+      "selfHosted": true,
+      "url": "http://localhost:9993",
+      "authToken": "${ZEROTIER_AUTH_TOKEN}",
+      "apiVersion": "v1"
+    },
+    "network": {
+      "subnet": "192.168.100.0/24",
+      "ipAssignmentPool": {
+        "start": "192.168.100.10",
+        "end": "192.168.100.250"
+      },
+      "routes": [
+        {
+          "target": "192.168.100.0/24",
+          "via": null
+        }
+      ],
+      "dns": {
+        "domain": "tactical.local",
+        "servers": [
+          "192.168.100.1",
+          "8.8.8.8",
+          "1.1.1.1"
+        ]
+      }
+    },
+    "security": {
+      "private": true,
+      "enableBroadcast": false,
+      "multicastLimit": 32,
+      "authorization": "manual",
+      "encryption": true
+    },
+    "devices": {
+      "maxDevices": 5,
+      "autoAuthorize": false,
+      "requireAuthentication": true,
+      "deviceTimeout": 300000
+    }
+  },
+  "networking": {
+    "interfaces": {
+      "primary": {
+        "name": "zt0",
+        "ip": "192.168.100.1",
+        "netmask": "255.255.255.0",
+        "mtu": 2800
+      },
+      "fallback": {
+        "name": "eth0",
+        "dhcp": true,
+        "priority": 2
+      }
+    },
+    "firewall": {
+      "enabled": true,
+      "defaultPolicy": "DROP",
+      "rules": [
+        {
+          "action": "ACCEPT",
+          "protocol": "tcp",
+          "port": 22,
+          "source": "192.168.100.0/24",
+          "comment": "SSH from tactical network"
+        },
+        {
+          "action": "ACCEPT",
+          "protocol": "tcp",
+          "port": 80,
+          "source": "192.168.100.0/24",
+          "comment": "HTTP from tactical network"
+        },
+        {
+          "action": "ACCEPT",
+          "protocol": "tcp",
+          "port": 443,
+          "source": "192.168.100.0/24",
+          "comment": "HTTPS from tactical network"
+        },
+        {
+          "action": "ACCEPT",
+          "protocol": "tcp",
+          "port": 8443,
+          "source": "192.168.100.0/24",
+          "comment": "Location WebSocket from tactical network"
+        },
+        {
+          "action": "ACCEPT",
+          "protocol": "udp",
+          "port": 9993,
+          "source": "any",
+          "comment": "ZeroTier protocol"
+        },
+        {
+          "action": "ACCEPT",
+          "protocol": "icmp",
+          "source": "192.168.100.0/24",
+          "comment": "ICMP from tactical network"
+        }
+      ]
+    },
+    "routing": {
+      "defaultGateway": "192.168.100.1",
+      "staticRoutes": [
+        {
+          "destination": "192.168.100.0/24",
+          "gateway": "192.168.100.1",
+          "interface": "zt0",
+          "metric": 1
+        }
+      ]
+    }
+  },
+  "services": {
+    "locationService": {
+      "bindAddress": "192.168.100.1",
+      "port": 8443,
+      "protocol": "wss",
+      "maxConnections": 5,
+      "allowedOrigins": [
+        "https://tactical.local",
+        "https://192.168.100.1"
+      ]
+    },
+    "apiService": {
+      "bindAddress": "192.168.100.1",
+      "port": 3002,
+      "protocol": "https",
+      "corsOrigins": [
+        "https://tactical.local",
+        "https://192.168.100.1"
+      ]
+    },
+    "webInterface": {
+      "bindAddress": "192.168.100.1",
+      "port": 443,
+      "protocol": "https",
+      "documentRoot": "/var/www/tactical"
+    }
+  },
+  "monitoring": {
+    "networkHealth": {
+      "enabled": true,
+      "checkInterval": 30000,
+      "targets": [
+        {
+          "name": "ZeroTier Controller",
+          "host": "localhost",
+          "port": 9993,
+          "protocol": "http"
+        },
+        {
+          "name": "Location Service",
+          "host": "192.168.100.1",
+          "port": 8443,
+          "protocol": "wss"
+        },
+        {
+          "name": "API Service",
+          "host": "192.168.100.1",
+          "port": 3002,
+          "protocol": "https"
+        }
+      ]
+    },
+    "bandwidth": {
+      "enabled": true,
+      "interface": "zt0",
+      "alertThreshold": 80,
+      "logInterval": 300000
+    },
+    "connectivity": {
+      "enabled": true,
+      "pingTargets": [
+        "8.8.8.8",
+        "1.1.1.1"
+      ],
+      "pingInterval": 60000,
+      "failureThreshold": 3
+    }
+  },
+  "security": {
+    "networkSecurity": {
+      "enabled": true,
+      "intrusion": {
+        "detection": true,
+        "prevention": true,
+        "logSuspiciousActivity": true
+      },
+      "portScanning": {
+        "detection": true,
+        "blockDuration": 3600000,
+        "maxAttempts": 5
+      }
+    },
+    "encryption": {
+      "zerotierEncryption": true,
+      "applicationLayerEncryption": true,
+      "keyRotationInterval": 86400000
+    },
+    "authentication": {
+      "deviceFingerprinting": true,
+      "multiFactorAuth": false,
+      "sessionTimeout": 3600000
+    }
+  },
+  "performance": {
+    "optimization": {
+      "enabled": true,
+      "tcpWindowScaling": true,
+      "tcpCongestionControl": "bbr",
+      "bufferSizes": {
+        "receive": 262144,
+        "send": 262144
+      }
+    },
+    "qos": {
+      "enabled": true,
+      "classes": [
+        {
+          "name": "emergency",
+          "priority": 1,
+          "bandwidth": "50%",
+          "protocols": ["emergency_alerts"]
+        },
+        {
+          "name": "location",
+          "priority": 2,
+          "bandwidth": "30%",
+          "protocols": ["location_updates"]
+        },
+        {
+          "name": "data",
+          "priority": 3,
+          "bandwidth": "20%",
+          "protocols": ["api", "web"]
+        }
+      ]
+    }
+  },
+  "backup": {
+    "networkConfig": {
+      "enabled": true,
+      "backupInterval": 86400000,
+      "retentionDays": 7,
+      "backupPath": "./backups/network"
+    },
+    "zerotierConfig": {
+      "enabled": true,
+      "backupPath": "./backups/zerotier",
+      "includeKeys": false
+    }
+  },
+  "logging": {
+    "network": {
+      "enabled": true,
+      "level": "info",
+      "logFile": "./logs/network.log",
+      "maxSize": "10MB",
+      "maxFiles": 5
+    },
+    "zerotier": {
+      "enabled": true,
+      "level": "info",
+      "logFile": "./logs/zerotier.log",
+      "maxSize": "5MB",
+      "maxFiles": 3
+    },
+    "firewall": {
+      "enabled": true,
+      "logDropped": true,
+      "logAccepted": false,
+      "logFile": "./logs/firewall.log"
+    }
+  },
+  "development": {
+    "testMode": {
+      "enabled": false,
+      "simulateDevices": 4,
+      "simulateLatency": 50,
+      "simulatePacketLoss": 0
+    },
+    "debugging": {
+      "verboseLogging": false,
+      "packetCapture": false,
+      "networkTracing": false
+    }
+  },
+  "deployment": {
+    "autoConfiguration": {
+      "enabled": true,
+      "detectInterfaces": true,
+      "configureFirewall": true,
+      "setupRouting": true
+    },
+    "validation": {
+      "enabled": true,
+      "checkConnectivity": true,
+      "validateSecurity": true,
+      "performanceTest": true
+    }
+  }
+}

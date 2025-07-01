@@ -1,0 +1,209 @@
+version: '3.8'
+
+services:
+  # OpenMapTiles Vector Tile Server
+  openmaptiles:
+    image: openmaptiles/openmaptiles-server:latest
+    container_name: tactical-openmaptiles
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - /mnt/secure_storage/maps/tiles:/data
+      - ./tactical-style.json:/usr/src/app/src/styles/tactical.json
+    environment:
+      - MBTILESERVER_ENABLE_RELOAD_SIGNAL=true
+      - MBTILESERVER_ENABLE_FS_WATCH=true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    networks:
+      - tactical-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Maps Service Application
+  maps-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tactical-maps-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /mnt/secure_storage/maps:/mnt/secure_storage/maps
+      - ./logs:/var/log
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - MAPS_DB_PASSWORD=${MAPS_DB_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENMAPTILES_URL=http://openmaptiles
+    depends_on:
+      - postgres
+      - redis
+      - openmaptiles
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    networks:
+      - tactical-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PostgreSQL with PostGIS for spatial data
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: tactical-maps-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - maps_postgres_data:/var/lib/postgresql/data
+      - ./maps-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    environment:
+      - POSTGRES_DB=tactical_maps
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MAPS_DB_PASSWORD=${MAPS_DB_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    networks:
+      - tactical-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tactical_maps"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis for caching and real-time updates
+  redis:
+    image: redis:7-alpine
+    container_name: tactical-maps-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - maps_redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    networks:
+      - tactical-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Nginx reverse proxy for tile serving
+  nginx-maps:
+    image: nginx:alpine
+    container_name: tactical-maps-nginx
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/maps.conf:/etc/nginx/conf.d/default.conf
+      - /mnt/secure_storage/ssl:/etc/nginx/ssl
+      - /mnt/secure_storage/maps/static:/var/www/static
+    depends_on:
+      - maps-service
+      - openmaptiles
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    networks:
+      - tactical-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Map data processing service
+  map-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile.processor
+    container_name: tactical-map-processor
+    restart: unless-stopped
+    volumes:
+      - /mnt/secure_storage/maps:/mnt/secure_storage/maps
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - MAPS_DB_PASSWORD=${MAPS_DB_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    networks:
+      - tactical-network
+    profiles:
+      - processing
+
+volumes:
+  maps_postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/secure_storage/maps/postgres
+  maps_redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/secure_storage/maps/redis
+
+networks:
+  tactical-network:
+    external: true
+    name: tactical-network
+
+# Environment variables template
+# Create .env file with these variables:
+# POSTGRES_PASSWORD=secure_postgres_password_2024!
+# MAPS_DB_PASSWORD=tactical_maps_2024!
+# REDIS_PASSWORD=redis_tactical_2024!
+# JWT_SECRET=your_jwt_secret_key_here

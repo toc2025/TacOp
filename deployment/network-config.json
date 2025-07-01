@@ -1,0 +1,159 @@
+{
+  "zerotier": {
+    "network_id": "",
+    "subnet": "192.168.100.0/24",
+    "controller_url": "http://localhost:9993",
+    "device_authorization": "manual",
+    "routes": [
+      {
+        "target": "192.168.100.0/24",
+        "via": null
+      }
+    ],
+    "dns": {
+      "servers": ["192.168.100.1"],
+      "domain": "tactical.local"
+    },
+    "rules": [
+      {
+        "type": "ACTION_ACCEPT"
+      }
+    ]
+  },
+  "firewall": {
+    "enabled": true,
+    "default_policy": "deny",
+    "rules": [
+      {
+        "port": 22,
+        "protocol": "tcp",
+        "source": "any",
+        "action": "allow",
+        "comment": "SSH access"
+      },
+      {
+        "port": 80,
+        "protocol": "tcp",
+        "source": "any",
+        "action": "allow",
+        "comment": "HTTP"
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "source": "any",
+        "action": "allow",
+        "comment": "HTTPS"
+      },
+      {
+        "port": 3000,
+        "protocol": "tcp",
+        "source": "192.168.100.0/24",
+        "action": "allow",
+        "comment": "Mattermost"
+      },
+      {
+        "port": 3001,
+        "protocol": "tcp",
+        "source": "192.168.100.0/24",
+        "action": "allow",
+        "comment": "Outline"
+      },
+      {
+        "port": 3002,
+        "protocol": "tcp",
+        "source": "192.168.100.0/24",
+        "action": "allow",
+        "comment": "Location API"
+      },
+      {
+        "port": 8080,
+        "protocol": "tcp",
+        "source": "192.168.100.0/24",
+        "action": "allow",
+        "comment": "Maps Service"
+      },
+      {
+        "port": 8081,
+        "protocol": "tcp",
+        "source": "192.168.100.0/24",
+        "action": "allow",
+        "comment": "FileBrowser"
+      },
+      {
+        "port": 8443,
+        "protocol": "tcp",
+        "source": "192.168.100.0/24",
+        "action": "allow",
+        "comment": "Location WebSocket"
+      },
+      {
+        "port": 9993,
+        "protocol": "udp",
+        "source": "any",
+        "action": "allow",
+        "comment": "ZeroTier"
+      }
+    ]
+  },
+  "dns": {
+    "enabled": true,
+    "domain": "tactical.local",
+    "records": [
+      {
+        "name": "tactical.local",
+        "type": "A",
+        "value": "192.168.100.1"
+      },
+      {
+        "name": "maps.tactical.local",
+        "type": "A",
+        "value": "192.168.100.1"
+      },
+      {
+        "name": "chat.tactical.local",
+        "type": "A",
+        "value": "192.168.100.1"
+      },
+      {
+        "name": "docs.tactical.local",
+        "type": "A",
+        "value": "192.168.100.1"
+      },
+      {
+        "name": "files.tactical.local",
+        "type": "A",
+        "value": "192.168.100.1"
+      }
+    ]
+  },
+  "load_balancing": {
+    "enabled": false,
+    "algorithm": "round_robin",
+    "health_checks": true,
+    "backends": []
+  },
+  "ssl": {
+    "enabled": true,
+    "certificate_path": "/mnt/secure_storage/ssl/tactical.crt",
+    "private_key_path": "/mnt/secure_storage/ssl/tactical.key",
+    "protocols": ["TLSv1.2", "TLSv1.3"],
+    "ciphers": [
+      "ECDHE+AESGCM",
+      "ECDHE+CHACHA20",
+      "DHE+AESGCM",
+      "DHE+CHACHA20",
+      "!aNULL",
+      "!MD5",
+      "!DSS"
+    ],
+    "hsts_enabled": true,
+    "hsts_max_age": 31536000
+  },
+  "rate_limiting": {
+    "enabled": true,
+    "requests_per_minute": 60,
+    "burst_size": 10,
+    "whitelist": ["192.168.100.0/24"]
+  }
+}

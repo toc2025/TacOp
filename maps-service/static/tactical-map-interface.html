@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Maps Interface</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 10px;
+            min-width: 200px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group h4 {
+            color: #00ff00;
+            margin-bottom: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .control-btn {
+            background: #001100;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 6px 12px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #003300;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .control-btn.active {
+            background: #00ff00;
+            color: #000000;
+        }
+
+        .control-btn.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .control-btn.danger:hover {
+            background: #330000;
+            box-shadow: 0 0 5px #ff0000;
+        }
+
+        .coordinates-display {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .team-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 10px;
+            min-width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .team-member.online {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .team-member.offline {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6666;
+        }
+
+        .member-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .member-indicator.online {
+            background: #00ff00;
+            box-shadow: 0 0 4px #00ff00;
+        }
+
+        .member-indicator.offline {
+            background: #ff0000;
+        }
+
+        .waypoint-form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 300px;
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff00;
+            font-size: 12px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: #001100;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 8px;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 60px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .measurement-display {
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 11px;
+            display: none;
+        }
+
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid #00ff00;
+            padding: 5px 10px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            color: #00ff00;
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            border: 2px solid #003300;
+            border-top: 2px solid #00ff00;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Maplibre GL overrides for tactical theme */
+        .maplibregl-ctrl-group {
+            background: rgba(0, 0, 0, 0.9) !important;
+            border: 1px solid #00ff00 !important;
+        }
+
+        .maplibregl-ctrl button {
+            background: #001100 !important;
+            color: #00ff00 !important;
+        }
+
+        .maplibregl-ctrl button:hover {
+            background: #003300 !important;
+        }
+
+        .maplibregl-popup-content {
+            background: rgba(0, 0, 0, 0.95) !important;
+            color: #00ff00 !important;
+            border: 1px solid #00ff00 !important;
+            border-radius: 4px !important;
+        }
+
+        .maplibregl-popup-close-button {
+            color: #00ff00 !important;
+            font-size: 16px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <div id="map"></div>
+        
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+            <span>Loading Tactical Maps...</span>
+        </div>
+
+        <div class="map-controls">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h4>Map Layers</h4>
+                    <button class="control-btn active" id="toggle-base-map">Base Map</button>
+                    <button class="control-btn active" id="toggle-team-locations">Team Locations</button>
+                    <button class="control-btn active" id="toggle-waypoints">Waypoints</button>
+                    <button class="control-btn" id="toggle-tactical-overlays">Tactical Overlays</button>
+                </div>
+                
+                <div class="control-group">
+                    <h4>Tools</h4>
+                    <button class="control-btn" id="add-waypoint">Add Waypoint</button>
+                    <button class="control-btn" id="measure-distance">Measure Distance</button>
+                    <button class="control-btn" id="measure-area">Measure Area</button>
+                    <button class="control-btn" id="draw-overlay">Draw Overlay</button>
+                </div>
+                
+                <div class="control-group">
+                    <h4>Navigation</h4>
+                    <button class="control-btn" id="center-team">Center on Team</button>
+                    <button class="control-btn" id="follow-mode">Follow Mode</button>
+                    <button class="control-btn" id="night-vision">Night Vision</button>
+                </div>
+                
+                <div class="control-group">
+                    <h4>Data</h4>
+                    <button class="control-btn" id="refresh-data">Refresh Data</button>
+                    <button class="control-btn" id="download-region">Download Region</button>
+                    <button class="control-btn danger" id="clear-cache">Clear Cache</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-panel">
+            <h4>Team Status</h4>
+            <div id="team-members"></div>
+        </div>
+
+        <div class="coordinates-display">
+            <div>Cursor: <span id="cursor-coords">---.------, ---.------</span></div>
+            <div>Zoom: <span id="zoom-level">--</span></div>
+            <div>Scale: <span id="map-scale">1:------</span></div>
+        </div>
+
+        <div class="measurement-display" id="measurement-display">
+            <div id="measurement-result"></div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="connection-status">Connecting...</span>
+                <span class="separator"> | </span>
+                <span id="gps-status">GPS: Acquiring</span>
+            </div>
+            <div class="status-center">
+                <span id="current-time"></span>
+            </div>
+            <div class="status-right">
+                <span id="map-status">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waypoint Form Modal -->
+    <div class="waypoint-form" id="waypoint-form">
+        <h4>Add Waypoint</h4>
+        <form id="waypoint-form-element">
+            <div class="form-group">
+                <label for="waypoint-name">Name:</label>
+                <input type="text" id="waypoint-name" required>
+            </div>
+            <div class="form-group">
+                <label for="waypoint-type">Type:</label>
+                <select id="waypoint-type">
+                    <option value="general">General</option>
+                    <option value="objective">Objective</option>
+                    <option value="checkpoint">Checkpoint</option>
+                    <option value="hazard">Hazard</option>
+                    <option value="rally_point">Rally Point</option>
+                    <option value="observation_post">Observation Post</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="waypoint-description">Description:</label>
+                <textarea id="waypoint-description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="waypoint-coordinates">Coordinates:</label>
+                <input type="text" id="waypoint-coordinates" readonly>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="control-btn" id="cancel-waypoint">Cancel</button>
+                <button type="submit" class="control-btn">Add Waypoint</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <script src="tactical-maps.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# PWA Icon Placeholders
+
+This directory contains placeholder references for the PWA icons. In a production deployment, these would be replaced with actual PNG icon files:
+
+## Required Icon Files:
+- 16.png (16x16 pixels) - Browser favicon
+- 32.png (32x32 pixels) - Browser favicon  
+- 48.png (48x48 pixels) - Extension icon
+- 128.png (128x128 pixels) - Chrome Web Store
+- 192.png (192x192 pixels) - Android home screen
+- 512.png (512x512 pixels) - Splash screen
+
+## Design Requirements:
+- **Discrete Design**: Icons should appear as generic system utility tools
+- **Non-Descriptive**: Avoid any tactical, military, or operational imagery
+- **Generic Appearance**: Use common system icons like gears, monitors, or diagnostic symbols
+- **Professional Look**: Clean, modern design suitable for business/utility applications
+
+## Suggested Icon Concepts:
+- System settings gear icon
+- Computer monitor with diagnostic symbols
+- Generic utility wrench/screwdriver
+- System performance graph
+- Generic maintenance tools
+
+## Color Scheme:
+- Primary: #424242 (Dark Gray)
+- Secondary: #757575 (Medium Gray)  
+- Accent: #2196F3 (Blue)
+- Background: #FAFAFA (Light Gray)
+
+These icons are critical for maintaining the discrete nature of the tactical PWA, ensuring it appears as a mundane system utility to casual observers.

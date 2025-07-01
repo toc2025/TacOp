@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Utility</title>
+    <meta name="description" content="System diagnostics and monitoring utility">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/32.png">
+    <link rel="apple-touch-icon" href="icons/192.png">
+    <meta name="theme-color" content="#424242">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SysUtil">
+</head>
+<body>
+    <div id="cover-interface" class="interface active">
+        <header class="header">
+            <h1>System Utility</h1>
+            <div class="status-indicator">
+                <span class="status-dot online"></span>
+                <span>System Online</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="diagnostics-section">
+                <h2>System Diagnostics</h2>
+                <div class="status-grid">
+                    <div class="status-item" data-auth="status">
+                        <div class="status-icon">🔋</div>
+                        <div class="status-info">
+                            <span class="status-label">Battery</span>
+                            <span class="status-value">87%</span>
+                        </div>
+                    </div>
+                    <div class="status-item" data-auth="network">
+                        <div class="status-icon">📶</div>
+                        <div class="status-info">
+                            <span class="status-label">Network</span>
+                            <span class="status-value">Connected</span>
+                        </div>
+                    </div>
+                    <div class="status-item" data-auth="battery">
+                        <div class="status-icon">💾</div>
+                        <div class="status-info">
+                            <span class="status-label">Storage</span>
+                            <span class="status-value">64GB Free</span>
+                        </div>
+                    </div>
+                    <div class="status-item" data-auth="storage">
+                        <div class="status-icon">🧠</div>
+                        <div class="status-info">
+                            <span class="status-label">Memory</span>
+                            <span class="status-value">12GB Available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tools-section">
+                <h2>System Tools</h2>
+                <div class="tools-grid">
+                    <button class="tool-button">
+                        <span class="tool-icon">⚙️</span>
+                        <span class="tool-label">Settings</span>
+                    </button>
+                    <button class="tool-button">
+                        <span class="tool-icon">📊</span>
+                        <span class="tool-label">Performance</span>
+                    </button>
+                    <button class="tool-button">
+                        <span class="tool-icon">🔧</span>
+                        <span class="tool-label">Maintenance</span>
+                    </button>
+                    <button class="tool-button">
+                        <span class="tool-icon">📋</span>
+                        <span class="tool-label">Logs</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="system-info">
+                    <p><strong>Version:</strong> 2.1.4</p>
+                    <p><strong>Last Updated:</strong> <span id="last-updated"></span></p>
+                    <p><strong>Uptime:</strong> <span id="uptime">2d 14h 32m</span></p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 System Utilities. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Hidden Tactical Interface -->
+    <div id="tactical-interface" class="interface">
+        <!-- This will be loaded from tactical-interface.html -->
+    </div>
+
+    <!-- Authentication feedback -->
+    <div id="auth-feedback" class="auth-feedback"></div>
+
+    <script src="../location-service/location-client.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

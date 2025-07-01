@@ -1,0 +1,112 @@
+{
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0",
+    "name": "Tactical Maps Server",
+    "version": "1.0.0"
+  },
+  "database": {
+    "host": "postgres",
+    "port": 5432,
+    "database": "tactical_maps",
+    "user": "maps_user",
+    "password": "${MAPS_DB_PASSWORD}",
+    "ssl": false,
+    "pool": {
+      "min": 2,
+      "max": 20,
+      "idleTimeoutMillis": 30000
+    }
+  },
+  "redis": {
+    "host": "redis",
+    "port": 6379,
+    "password": "${REDIS_PASSWORD}",
+    "db": 2,
+    "keyPrefix": "maps:",
+    "ttl": 3600
+  },
+  "storage": {
+    "mapsPath": "/mnt/secure_storage/maps",
+    "tilesPath": "/mnt/secure_storage/maps/tiles",
+    "dataPath": "/mnt/secure_storage/maps/data",
+    "cachePath": "/mnt/secure_storage/maps/cache",
+    "maxStorageGB": 500,
+    "compressionLevel": 6
+  },
+  "tiles": {
+    "format": "mvt",
+    "tileSize": 512,
+    "minZoom": 0,
+    "maxZoom": 18,
+    "bufferSize": 64,
+    "extent": 4096,
+    "defaultStyle": "tactical",
+    "cacheHeaders": {
+      "maxAge": 86400,
+      "staleWhileRevalidate": 604800
+    }
+  },
+  "regions": {
+    "defaultRegion": "global",
+    "maxRegionSizeMB": 1000,
+    "preloadRegions": [
+      "tactical_zone_1",
+      "tactical_zone_2",
+      "base_operations"
+    ]
+  },
+  "security": {
+    "enableAuth": true,
+    "jwtSecret": "${JWT_SECRET}",
+    "tokenExpiry": "24h",
+    "rateLimiting": {
+      "windowMs": 900000,
+      "max": 1000
+    },
+    "cors": {
+      "origin": ["https://tactical.local", "https://localhost:3000"],
+      "credentials": true
+    }
+  },
+  "performance": {
+    "memoryLimit": "6GB",
+    "workerThreads": 4,
+    "tileCache": {
+      "maxSize": "2GB",
+      "ttl": 3600
+    },
+    "compression": {
+      "enabled": true,
+      "level": 6,
+      "threshold": 1024
+    }
+  },
+  "logging": {
+    "level": "info",
+    "file": "/var/log/maps-service.log",
+    "maxSize": "100MB",
+    "maxFiles": 5,
+    "format": "json"
+  },
+  "monitoring": {
+    "healthCheck": {
+      "enabled": true,
+      "interval": 30000,
+      "timeout": 5000
+    },
+    "metrics": {
+      "enabled": true,
+      "endpoint": "/metrics"
+    }
+  },
+  "features": {
+    "teamTracking": true,
+    "waypoints": true,
+    "measurements": true,
+    "tacticalSymbols": true,
+    "offlineMode": true,
+    "regionDownloads": true,
+    "customOverlays": true
+  }
+}

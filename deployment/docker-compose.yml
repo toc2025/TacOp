@@ -1,0 +1,520 @@
+# Mobile Tactical Deployment Server - Complete Docker Compose Stack
+# Version: 1.0.0
+# Resource Allocation: 15GB RAM, 932GB Storage
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database with PostGIS (1GB RAM, 50GB Storage)
+  postgresql:
+    image: postgis/postgis:15-3.3
+    container_name: tactical-postgresql
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+      - ./setup-users.sql:/docker-entrypoint-initdb.d/02-setup-users.sql:ro
+      - ../location-service/location-schema.sql:/docker-entrypoint-initdb.d/03-location-schema.sql:ro
+      - ../maps-service/maps-schema.sql:/docker-entrypoint-initdb.d/04-maps-schema.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - tactical-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache Layer (2GB RAM)
+  redis:
+    image: redis:7-alpine
+    container_name: tactical-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "6379:6379"
+    networks:
+      - tactical-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # ZeroTier Controller (1GB RAM, 100MB Storage)
+  zerotier-controller:
+    image: zerotier/zerotier:latest
+    container_name: tactical-zerotier
+    restart: unless-stopped
+    environment:
+      ZEROTIER_ONE_LOCAL_PHYS: ${SERVER_IP:-192.168.100.1}
+      ZEROTIER_ONE_USE_IPTABLES_NFT: "false"
+    volumes:
+      - zerotier_data:/var/lib/zerotier-one
+    ports:
+      - "9993:9993/udp"
+    networks:
+      - tactical-network
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "zerotier-cli", "info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Location Tracking Service (512MB RAM)
+  location-service:
+    build:
+      context: ../location-service
+      dockerfile: Dockerfile
+    container_name: tactical-location-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgresql
+      DATABASE_PORT: 5432
+      DATABASE_NAME: tactical_location
+      DATABASE_USER: tactical
+      DATABASE_PASSWORD: ${LOCATION_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      SSL_CERT_PATH: /certs/tactical.crt
+      SSL_KEY_PATH: /certs/tactical.key
+      WEBSOCKET_PORT: 8443
+      API_PORT: 3002
+      LOG_LEVEL: info
+    volumes:
+      - ${SSL_CERT_PATH}:/certs/tactical.crt:ro
+      - ${SSL_KEY_PATH}:/certs/tactical.key:ro
+      - location_logs:/app/logs
+    ports:
+      - "8443:8443"
+      - "3002:3002"
+    networks:
+      - tactical-network
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Maps Service (1GB RAM)
+  maps-service:
+    build:
+      context: ../maps-service
+      dockerfile: Dockerfile
+    container_name: tactical-maps-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgresql
+      DATABASE_PORT: 5432
+      DATABASE_NAME: tactical_maps
+      DATABASE_USER: maps_user
+      DATABASE_PASSWORD: ${MAPS_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      OPENMAPTILES_URL: http://openmaptiles
+      MAPS_PORT: 8080
+    volumes:
+      - ${MAPS_PATH}:/mnt/secure_storage/maps
+      - maps_logs:/var/log
+    ports:
+      - "8080:8080"
+    networks:
+      - tactical-network
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      openmaptiles:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # OpenMapTiles Server (6GB RAM, 500GB Storage)
+  openmaptiles:
+    image: openmaptiles/openmaptiles-server:latest
+    container_name: tactical-openmaptiles
+    restart: unless-stopped
+    environment:
+      MBTILESERVER_ENABLE_RELOAD_SIGNAL: "true"
+      MBTILESERVER_ENABLE_FS_WATCH: "true"
+    volumes:
+      - ${MAPS_PATH}/tiles:/data
+      - ../maps-service/tactical-style.json:/usr/src/app/src/styles/tactical.json:ro
+    ports:
+      - "8082:80"
+    networks:
+      - tactical-network
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Outline Knowledge Base (2GB RAM, 100GB Storage)
+  outline:
+    image: outlinewiki/outline:latest
+    container_name: tactical-outline
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      SECRET_KEY: ${OUTLINE_SECRET_KEY}
+      UTILS_SECRET: ${OUTLINE_SECRET_KEY}
+      DATABASE_URL: postgres://outline:${OUTLINE_DB_PASSWORD}@postgresql:5432/outline
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      URL: https://${DOMAIN_NAME}:3001
+      PORT: 3001
+      FORCE_HTTPS: "false"
+      ENABLE_UPDATES: "false"
+      WEB_CONCURRENCY: 1
+      MAXIMUM_IMPORT_SIZE: 5120000
+      DEBUG: cache,presenters,events
+      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+      SLACK_CLIENT_ID: ""
+      SLACK_CLIENT_SECRET: ""
+      DEFAULT_LANGUAGE: en_US
+      TEAM_LOGO: ""
+    volumes:
+      - outline_data:/var/lib/outline/data
+    ports:
+      - "3001:3001"
+    networks:
+      - tactical-network
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Mattermost Communications (1GB RAM, 50GB Storage)
+  mattermost:
+    image: mattermost/mattermost-team-edition:latest
+    container_name: tactical-mattermost
+    restart: unless-stopped
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mattermost:${MATTERMOST_DB_PASSWORD}@postgresql:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
+      MM_SERVICESETTINGS_SITEURL: https://${DOMAIN_NAME}:3000
+      MM_SERVICESETTINGS_LISTENADDRESS: ":8065"
+      MM_SERVICESETTINGS_ENABLELOCALMODE: "true"
+      MM_TEAMSETTINGS_ENABLETEAMCREATION: "false"
+      MM_TEAMSETTINGS_ENABLEUSERACCESS: "true"
+      MM_SERVICESETTINGS_ENABLEDEVELOPER: "false"
+      MM_SERVICESETTINGS_ENABLETESTING: "false"
+      MM_SERVICESETTINGS_ENABLESECURITYFIXALERT: "false"
+    volumes:
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+      - mattermost_config:/mattermost/config
+      - mattermost_plugins:/mattermost/plugins
+    ports:
+      - "3000:8065"
+    networks:
+      - tactical-network
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8065/api/v4/system/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # FileBrowser (512MB RAM, 10GB Storage)
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: tactical-filebrowser
+    restart: unless-stopped
+    environment:
+      FB_DATABASE: /database/filebrowser.db
+      FB_ROOT: /srv
+      FB_LOG: stdout
+      FB_NOAUTH: "false"
+    volumes:
+      - filebrowser_data:/database
+      - ${DATA_PATH}:/srv
+      - ./filebrowser/filebrowser.json:/config/settings.json:ro
+    ports:
+      - "8081:80"
+    networks:
+      - tactical-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy (512MB RAM)
+  nginx:
+    image: nginx:alpine
+    container_name: tactical-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${SSL_CERT_PATH}:/etc/nginx/ssl/tactical.crt:ro
+      - ${SSL_KEY_PATH}:/etc/nginx/ssl/tactical.key:ro
+      - ../pwa:/var/www/html:ro
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - tactical-network
+    depends_on:
+      - location-service
+      - maps-service
+      - outline
+      - mattermost
+      - filebrowser
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Named volumes for persistent data
+volumes:
+  postgresql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/postgresql
+
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/redis
+
+  zerotier_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/zerotier
+
+  outline_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/outline
+
+  mattermost_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/mattermost
+
+  mattermost_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/mattermost
+
+  mattermost_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/mattermost/config
+
+  mattermost_plugins:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/mattermost/plugins
+
+  filebrowser_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/filebrowser
+
+  location_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/location
+
+  maps_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/maps
+
+  nginx_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/nginx
+
+# Networks
+networks:
+  tactical-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+    driver_opts:
+      com.docker.network.bridge.name: tactical-br0
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.driver.mtu: 1500

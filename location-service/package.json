@@ -1,0 +1,114 @@
+{
+  "name": "tactical-location-service",
+  "version": "1.0.0",
+  "description": "Real-time GPS location tracking service for tactical operations",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "dev:websocket": "nodemon websocket-server.js",
+    "dev:api": "nodemon api-server.js",
+    "dev:monitor": "nodemon monitor.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "npm run lint && npm test",
+    "docker:build": "docker build -t tactical-location-service .",
+    "docker:run": "docker-compose -f docker-compose.location.yml up",
+    "docker:dev": "docker-compose -f docker-compose.location.yml -f docker-compose.location.dev.yml up",
+    "docker:stop": "docker-compose -f docker-compose.location.yml down",
+    "setup": "npm install && npm run setup:db && npm run setup:certs",
+    "setup:db": "node scripts/setup-database.js",
+    "setup:certs": "node scripts/generate-certs.js",
+    "cleanup": "node scripts/cleanup-data.js",
+    "backup": "node scripts/backup-config.js",
+    "health": "node scripts/health-check.js"
+  },
+  "keywords": [
+    "tactical",
+    "location",
+    "gps",
+    "tracking",
+    "websocket",
+    "real-time",
+    "zerotier",
+    "military",
+    "security"
+  ],
+  "author": "Tactical Operations Team",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.14.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "pg": "^8.11.3",
+    "redis": "^4.6.10",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "crypto": "^1.0.1",
+    "uuid": "^9.0.1",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.55.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "@types/node": "^20.10.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tactical-ops/location-service.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tactical-ops/location-service/issues"
+  },
+  "homepage": "https://github.com/tactical-ops/location-service#readme",
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!node_modules/**",
+      "!coverage/**",
+      "!jest.config.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "standard"
+    ],
+    "env": {
+      "node": true,
+      "jest": true
+    },
+    "rules": {
+      "no-console": "off",
+      "semi": ["error", "always"]
+    }
+  }
+}

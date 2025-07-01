@@ -1,0 +1,144 @@
+{
+  "server": {
+    "name": "Mobile Tactical Deployment Server",
+    "version": "1.0.0",
+    "environment": "production",
+    "domain": "tactical.local",
+    "ip": "192.168.100.1",
+    "timezone": "UTC"
+  },
+  "deployment": {
+    "target_time_minutes": 10,
+    "hardware": "Raspberry Pi 5",
+    "ram_allocation_gb": 15,
+    "storage_allocation_gb": 932
+  },
+  "services": {
+    "postgresql": {
+      "enabled": true,
+      "ram_mb": 1024,
+      "storage_gb": 50,
+      "port": 5432,
+      "databases": ["tactical_location", "tactical_maps", "outline", "mattermost"]
+    },
+    "redis": {
+      "enabled": true,
+      "ram_mb": 2048,
+      "port": 6379,
+      "persistence": true
+    },
+    "zerotier": {
+      "enabled": true,
+      "ram_mb": 1024,
+      "storage_mb": 100,
+      "port": 9993,
+      "network_subnet": "192.168.100.0/24"
+    },
+    "location_service": {
+      "enabled": true,
+      "ram_mb": 512,
+      "websocket_port": 8443,
+      "api_port": 3002,
+      "update_interval_ms": 30000,
+      "max_clients": 5
+    },
+    "maps_service": {
+      "enabled": true,
+      "ram_mb": 1024,
+      "port": 8080,
+      "storage_gb": 500,
+      "tile_cache_gb": 2
+    },
+    "openmaptiles": {
+      "enabled": true,
+      "ram_mb": 6144,
+      "storage_gb": 500,
+      "port": 8082,
+      "max_zoom": 18
+    },
+    "outline": {
+      "enabled": true,
+      "ram_mb": 2048,
+      "storage_gb": 100,
+      "port": 3001
+    },
+    "mattermost": {
+      "enabled": true,
+      "ram_mb": 1024,
+      "storage_gb": 50,
+      "port": 3000
+    },
+    "filebrowser": {
+      "enabled": true,
+      "ram_mb": 512,
+      "storage_gb": 10,
+      "port": 8081
+    },
+    "nginx": {
+      "enabled": true,
+      "ram_mb": 512,
+      "http_port": 80,
+      "https_port": 443
+    }
+  },
+  "security": {
+    "ssl_enabled": true,
+    "firewall_enabled": true,
+    "fail2ban_enabled": true,
+    "ssh_hardening": true,
+    "automatic_updates": true,
+    "encryption": {
+      "algorithm": "aes-256-gcm",
+      "key_rotation_hours": 24
+    }
+  },
+  "networking": {
+    "zerotier_network": "",
+    "subnet": "192.168.100.0/24",
+    "gateway": "192.168.100.1",
+    "dns_servers": ["8.8.8.8", "8.8.4.4"],
+    "allowed_ports": [22, 80, 443, 3000, 3001, 3002, 8080, 8081, 8082, 8443, 9993]
+  },
+  "storage": {
+    "base_path": "/mnt/secure_storage",
+    "encryption_enabled": false,
+    "backup_enabled": true,
+    "cleanup_enabled": true,
+    "retention": {
+      "location_data_hours": 24,
+      "emergency_alerts_days": 7,
+      "logs_days": 30,
+      "backups_days": 7
+    }
+  },
+  "monitoring": {
+    "health_checks_enabled": true,
+    "metrics_enabled": true,
+    "alerting_enabled": true,
+    "log_level": "info",
+    "check_interval_seconds": 30
+  },
+  "team": {
+    "max_members": 5,
+    "default_roles": ["commander", "team_leader", "operator", "support"],
+    "emergency_mode_enabled": true,
+    "proximity_alerts_enabled": false
+  },
+  "features": {
+    "location_tracking": true,
+    "team_communications": true,
+    "knowledge_base": true,
+    "file_sharing": true,
+    "offline_maps": true,
+    "emergency_alerts": true,
+    "waypoint_marking": true,
+    "tactical_overlays": true
+  },
+  "performance": {
+    "optimization_enabled": true,
+    "compression_enabled": true,
+    "caching_enabled": true,
+    "load_balancing_enabled": false,
+    "auto_scaling_enabled": false
+  }
+}

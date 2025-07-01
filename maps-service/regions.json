@@ -1,0 +1,214 @@
+{
+  "version": "1.0.0",
+  "regions": {
+    "global": {
+      "name": "Global Coverage",
+      "description": "Worldwide base map coverage",
+      "bounds": [-180, -85, 180, 85],
+      "minZoom": 0,
+      "maxZoom": 10,
+      "priority": 1,
+      "estimatedSizeMB": 2000,
+      "preload": true
+    },
+    "tactical_zone_1": {
+      "name": "Tactical Zone Alpha",
+      "description": "Primary operational area",
+      "bounds": [-122.5, 37.7, -122.3, 37.9],
+      "minZoom": 0,
+      "maxZoom": 18,
+      "priority": 10,
+      "estimatedSizeMB": 150,
+      "preload": true,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "tacticalOverlays": true,
+        "measurements": true
+      },
+      "metadata": {
+        "operationType": "urban",
+        "terrain": "mixed",
+        "population": "high",
+        "infrastructure": "dense"
+      }
+    },
+    "tactical_zone_2": {
+      "name": "Tactical Zone Bravo",
+      "description": "Secondary operational area",
+      "bounds": [-122.7, 37.5, -122.5, 37.7],
+      "minZoom": 0,
+      "maxZoom": 18,
+      "priority": 9,
+      "estimatedSizeMB": 120,
+      "preload": true,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "tacticalOverlays": true,
+        "measurements": true
+      },
+      "metadata": {
+        "operationType": "suburban",
+        "terrain": "hills",
+        "population": "medium",
+        "infrastructure": "moderate"
+      }
+    },
+    "base_operations": {
+      "name": "Base Operations Area",
+      "description": "Main base and surrounding area",
+      "bounds": [-122.4, 37.75, -122.35, 37.8],
+      "minZoom": 0,
+      "maxZoom": 20,
+      "priority": 10,
+      "estimatedSizeMB": 80,
+      "preload": true,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "tacticalOverlays": true,
+        "measurements": true,
+        "detailedBuildings": true
+      },
+      "metadata": {
+        "operationType": "base",
+        "terrain": "flat",
+        "population": "controlled",
+        "infrastructure": "military"
+      }
+    },
+    "training_area_1": {
+      "name": "Training Area North",
+      "description": "Northern training grounds",
+      "bounds": [-122.6, 37.9, -122.4, 38.1],
+      "minZoom": 0,
+      "maxZoom": 16,
+      "priority": 5,
+      "estimatedSizeMB": 90,
+      "preload": false,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "measurements": true
+      },
+      "metadata": {
+        "operationType": "training",
+        "terrain": "rural",
+        "population": "low",
+        "infrastructure": "minimal"
+      }
+    },
+    "training_area_2": {
+      "name": "Training Area South",
+      "description": "Southern training grounds",
+      "bounds": [-122.6, 37.3, -122.4, 37.5],
+      "minZoom": 0,
+      "maxZoom": 16,
+      "priority": 5,
+      "estimatedSizeMB": 85,
+      "preload": false,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "measurements": true
+      },
+      "metadata": {
+        "operationType": "training",
+        "terrain": "mountainous",
+        "population": "none",
+        "infrastructure": "minimal"
+      }
+    },
+    "emergency_zone": {
+      "name": "Emergency Response Zone",
+      "description": "High-priority emergency response area",
+      "bounds": [-122.45, 37.72, -122.38, 37.78],
+      "minZoom": 0,
+      "maxZoom": 19,
+      "priority": 8,
+      "estimatedSizeMB": 110,
+      "preload": false,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "tacticalOverlays": true,
+        "measurements": true,
+        "emergencyServices": true
+      },
+      "metadata": {
+        "operationType": "emergency",
+        "terrain": "urban",
+        "population": "high",
+        "infrastructure": "critical"
+      }
+    },
+    "patrol_route_1": {
+      "name": "Patrol Route Alpha",
+      "description": "Primary patrol corridor",
+      "bounds": [-122.5, 37.7, -122.35, 37.85],
+      "minZoom": 10,
+      "maxZoom": 18,
+      "priority": 7,
+      "estimatedSizeMB": 60,
+      "preload": false,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "measurements": true,
+        "routeOptimization": true
+      },
+      "metadata": {
+        "operationType": "patrol",
+        "terrain": "mixed",
+        "population": "variable",
+        "infrastructure": "roads"
+      }
+    },
+    "observation_post_1": {
+      "name": "Observation Post Charlie",
+      "description": "Strategic observation point",
+      "bounds": [-122.42, 37.76, -122.40, 37.78],
+      "minZoom": 12,
+      "maxZoom": 20,
+      "priority": 6,
+      "estimatedSizeMB": 25,
+      "preload": false,
+      "features": {
+        "teamTracking": true,
+        "waypoints": true,
+        "tacticalOverlays": true,
+        "measurements": true,
+        "surveillance": true
+      },
+      "metadata": {
+        "operationType": "observation",
+        "terrain": "elevated",
+        "population": "none",
+        "infrastructure": "tactical"
+      }
+    }
+  },
+  "downloadSettings": {
+    "maxConcurrentDownloads": 3,
+    "retryAttempts": 3,
+    "timeoutSeconds": 300,
+    "compressionLevel": 6,
+    "verifyIntegrity": true
+  },
+  "storageSettings": {
+    "maxTotalSizeGB": 450,
+    "cleanupThresholdGB": 400,
+    "retentionDays": 30,
+    "priorityCleanup": true
+  },
+  "updateSettings": {
+    "autoUpdate": true,
+    "updateInterval": "weekly",
+    "updateWindow": {
+      "start": "02:00",
+      "end": "06:00"
+    },
+    "deltaUpdates": true
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "firewall": {
+    "enabled": true,
+    "provider": "ufw",
+    "default_incoming": "deny",
+    "default_outgoing": "allow",
+    "logging": "on",
+    "rules": [
+      {
+        "port": "22/tcp",
+        "action": "allow",
+        "comment": "SSH"
+      },
+      {
+        "port": "80/tcp",
+        "action": "allow",
+        "comment": "HTTP"
+      },
+      {
+        "port": "443/tcp",
+        "action": "allow",
+        "comment": "HTTPS"
+      },
+      {
+        "port": "3000/tcp",
+        "action": "allow",
+        "comment": "Mattermost"
+      },
+      {
+        "port": "3001/tcp",
+        "action": "allow",
+        "comment": "Outline"
+      },
+      {
+        "port": "3002/tcp",
+        "action": "allow",
+        "comment": "Location API"
+      },
+      {
+        "port": "8080/tcp",
+        "action": "allow",
+        "comment": "Maps Service"
+      },
+      {
+        "port": "8081/tcp",
+        "action": "allow",
+        "comment": "FileBrowser"
+      },
+      {
+        "port": "8443/tcp",
+        "action": "allow",
+        "comment": "Location WebSocket"
+      },
+      {
+        "port": "9993/udp",
+        "action": "allow",
+        "comment": "ZeroTier"
+      }
+    ]
+  },
+  "fail2ban": {
+    "enabled": true,
+    "jails": [
+      {
+        "name": "sshd",
+        "enabled": true,
+        "port": "ssh",
+        "filter": "sshd",
+        "logpath": "/var/log/auth.log",
+        "maxretry": 3,
+        "bantime": 3600,
+        "findtime": 600
+      },
+      {
+        "name": "nginx-http-auth",
+        "enabled": true,
+        "port": "http,https",
+        "filter": "nginx-http-auth",
+        "logpath": "/var/log/nginx/error.log",
+        "maxretry": 5,
+        "bantime": 600,
+        "findtime": 600
+      },
+      {
+        "name": "nginx-limit-req",
+        "enabled": true,
+        "port": "http,https",
+        "filter": "nginx-limit-req",
+        "logpath": "/var/log/nginx/error.log",
+        "maxretry": 10,
+        "bantime": 600,
+        "findtime": 600
+      }
+    ]
+  },
+  "ssh": {
+    "hardening_enabled": true,
+    "port": 22,
+    "permit_root_login": false,
+    "password_authentication": false,
+    "pubkey_authentication": true,
+    "challenge_response_authentication": false,
+    "use_pam": true,
+    "x11_forwarding": false,
+    "print_motd": false,
+    "tcp_keep_alive": true,
+    "client_alive_interval": 300,
+    "client_alive_count_max": 2,
+    "max_auth_tries": 3,
+    "max_sessions": 2,
+    "protocol": 2,
+    "ciphers": [
+      "chacha20-poly1305@openssh.com",
+      "aes256-gcm@openssh.com",
+      "aes128-gcm@openssh.com",
+      "aes256-ctr",
+      "aes192-ctr",
+      "aes128-ctr"
+    ],
+    "macs": [
+      "hmac-sha2-256-etm@openssh.com",
+      "hmac-sha2-512-etm@openssh.com",
+      "hmac-sha2-256",
+      "hmac-sha2-512"
+    ],
+    "kex_algorithms": [
+      "curve25519-sha256@libssh.org",
+      "diffie-hellman-group16-sha512",
+      "diffie-hellman-group18-sha512",
+      "diffie-hellman-group14-sha256"
+    ]
+  },
+  "ssl_tls": {
+    "protocols": ["TLSv1.2", "TLSv1.3"],
+    "ciphers": [
+      "ECDHE+AESGCM",
+      "ECDHE+CHACHA20",
+      "DHE+AESGCM",
+      "DHE+CHACHA20",
+      "!aNULL",
+      "!MD5",
+      "!DSS",
+      "!RC4"
+    ],
+    "prefer_server_ciphers": true,
+    "session_cache": "shared:SSL:10m",
+    "session_timeout": "10m",
+    "stapling": true,
+    "stapling_verify": true,
+    "hsts": {
+      "enabled": true,
+      "max_age": 31536000,
+      "include_subdomains": true,
+      "preload": true
+    }
+  },
+  "headers": {
+    "security_headers": {
+      "x_frame_options": "DENY",
+      "x_content_type_options": "nosniff",
+      "x_xss_protection": "1; mode=block",
+      "referrer_policy": "strict-origin-when-cross-origin",
+      "content_security_policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' wss: ws:; font-src 'self'; object-src 'none'; media-src 'self'; frame-src 'none';",
+      "permissions_policy": "geolocation=(self), microphone=(), camera=(), payment=(), usb=()"
+    }
+  },
+  "rate_limiting": {
+    "enabled": true,
+    "global": {
+      "requests_per_minute": 60,
+      "burst": 10
+    },
+    "api": {
+      "requests_per_minute": 100,
+      "burst": 20
+    },
+    "auth": {
+      "requests_per_minute": 5,
+      "burst": 2
+    }
+  },
+  "intrusion_detection": {
+    "enabled": true,
+    "log_suspicious_activity": true,
+    "block_repeated_failures": true,
+    "alert_on_privilege_escalation": true,
+    "monitor_file_integrity": true
+  },
+  "encryption": {
+    "data_at_rest": {
+      "enabled": false,
+      "algorithm": "aes-256-xts",
+      "key_management": "manual"
+    },
+    "data_in_transit": {
+      "enabled": true,
+      "force_https": true,
+      "hsts_enabled": true
+    },
+    "database": {
+      "ssl_enabled": false,
+      "encryption_enabled": false
+    }
+  },
+  "access_control": {
+    "rbac_enabled": true,
+    "default_role": "operator",
+    "roles": [
+      {
+        "name": "commander",
+        "permissions": ["admin", "view_all", "manage_alerts", "manage_users", "system_control"]
+      },
+      {
+        "name": "team_leader",
+        "permissions": ["view_team", "manage_waypoints", "send_alerts", "manage_mission"]
+      },
+      {
+        "name": "operator",
+        "permissions": ["view_team", "send_alerts", "mark_waypoints"]
+      },
+      {
+        "name": "support",
+        "permissions": ["view_team", "view_maps"]
+      }
+    ]
+  },
+  "audit": {
+    "enabled": true,
+    "log_all_access": true,
+    "log_failed_attempts": true,
+    "log_privilege_changes": true,
+    "log_data_access": true,
+    "retention_days": 90
+  },
+  "backup_security": {
+    "encryption_enabled": true,
+    "compression_enabled": true,
+    "integrity_checks": true,
+    "offsite_backup": false
+  },
+  "updates": {
+    "automatic_security_updates": true,
+    "update_window": "02:00-04:00",
+    "reboot_if_required": true,
+    "notification_email": ""
+  }
+}

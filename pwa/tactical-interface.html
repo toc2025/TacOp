@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Operations</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="tactical-container">
+        <header class="tactical-header">
+            <div class="tactical-title">
+                <h1>Tactical Operations Center</h1>
+                <div class="mission-status">
+                    <span class="mission-indicator active"></span>
+                    <span id="mission-status">Mission Active</span>
+                </div>
+            </div>
+            <div class="tactical-controls">
+                <button id="location-toggle" class="control-btn location-active">
+                    <span class="control-icon">📍</span>
+                    <span>Location ON</span>
+                </button>
+                <button id="exit-tactical" class="control-btn exit-btn">
+                    <span class="control-icon">🔒</span>
+                    <span>Secure Exit</span>
+                </button>
+            </div>
+        </header>
+
+        <nav class="tactical-nav">
+            <button class="nav-btn active" data-section="dashboard">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-btn" data-section="reports">
+                <span class="nav-icon">📝</span>
+                <span>Reports</span>
+            </button>
+            <button class="nav-btn" data-section="comms">
+                <span class="nav-icon">💬</span>
+                <span>Comms</span>
+            </button>
+            <button class="nav-btn" data-section="maps">
+                <span class="nav-icon">🗺️</span>
+                <span>Maps</span>
+            </button>
+            <button class="nav-btn" data-section="files">
+                <span class="nav-icon">📁</span>
+                <span>Files</span>
+            </button>
+        </nav>
+
+        <main class="tactical-main">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="tactical-section active">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card team-status">
+                        <h3>Team Status</h3>
+                        <div class="team-members">
+                            <div class="member-item">
+                                <div class="member-indicator online"></div>
+                                <span class="member-name">Alpha-1</span>
+                                <span class="member-location">Grid: 34.052, -118.243</span>
+                                <span class="member-time">2m ago</span>
+                            </div>
+                            <div class="member-item">
+                                <div class="member-indicator online"></div>
+                                <span class="member-name">Alpha-2</span>
+                                <span class="member-location">Grid: 34.051, -118.245</span>
+                                <span class="member-time">1m ago</span>
+                            </div>
+                            <div class="member-item">
+                                <div class="member-indicator offline"></div>
+                                <span class="member-name">Alpha-3</span>
+                                <span class="member-location">Last: Grid: 34.049, -118.241</span>
+                                <span class="member-time">15m ago</span>
+                            </div>
+                            <div class="member-item">
+                                <div class="member-indicator online"></div>
+                                <span class="member-name">Bravo-1</span>
+                                <span class="member-location">Grid: 34.048, -118.239</span>
+                                <span class="member-time">30s ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card mission-info">
+                        <h3>Mission Information</h3>
+                        <div class="mission-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Operation:</span>
+                                <span class="detail-value" id="operation-name">TRAINING-ALPHA</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Start Time:</span>
+                                <span class="detail-value" id="start-time">14:30 UTC</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Duration:</span>
+                                <span class="detail-value" id="mission-duration">2h 15m</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">AO:</span>
+                                <span class="detail-value" id="area-operations">Sector 7-Alpha</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card system-status">
+                        <h3>System Status</h3>
+                        <div class="system-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Network:</span>
+                                <span class="metric-value online">ZeroTier Connected</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Server:</span>
+                                <span class="metric-value online">192.168.100.1</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Encryption:</span>
+                                <span class="metric-value secure">AES-256 Active</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Storage:</span>
+                                <span class="metric-value">847GB Available</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="createSitRep()">
+                                <span class="action-icon">📋</span>
+                                <span>Create SITREP</span>
+                            </button>
+                            <button class="action-btn" onclick="broadcastMessage()">
+                                <span class="action-icon">📢</span>
+                                <span>Broadcast</span>
+                            </button>
+                            <button class="action-btn" onclick="markWaypoint()">
+                                <span class="action-icon">📍</span>
+                                <span>Mark Waypoint</span>
+                            </button>
+                            <button class="action-btn" onclick="emergencyAlert()">
+                                <span class="action-icon">🚨</span>
+                                <span>Emergency</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports-section" class="tactical-section">
+                <div class="section-header">
+                    <h2>Collaborative Reports</h2>
+                    <button class="primary-btn" onclick="createNewReport()">
+                        <span class="btn-icon">➕</span>
+                        New Report
+                    </button>
+                </div>
+                <div class="reports-container">
+                    <div class="service-frame">
+                        <iframe id="outline-frame" src="about:blank" title="Outline Reports"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Communications Section -->
+            <section id="comms-section" class="tactical-section">
+                <div class="section-header">
+                    <h2>Team Communications</h2>
+                    <div class="comms-status">
+                        <span class="status-indicator online"></span>
+                        <span>4 Members Online</span>
+                    </div>
+                </div>
+                <div class="comms-container">
+                    <div class="service-frame">
+                        <iframe id="mattermost-frame" src="about:blank" title="Mattermost Communications"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Maps Section -->
+            <section id="maps-section" class="tactical-section">
+                <div class="section-header">
+                    <h2>Tactical Maps</h2>
+                    <div class="map-controls">
+                        <button class="map-btn" onclick="centerOnTeam()">
+                            <span class="btn-icon">🎯</span>
+                            Center on Team
+                        </button>
+                        <button class="map-btn" onclick="toggleTracking()">
+                            <span class="btn-icon">📍</span>
+                            Toggle Tracking
+                        </button>
+                        <button class="map-btn" onclick="openFullscreenMap()">
+                            <span class="btn-icon">🗺️</span>
+                            Fullscreen Map
+                        </button>
+                        <button class="map-btn" onclick="downloadMapRegion()">
+                            <span class="btn-icon">⬇️</span>
+                            Download Region
+                        </button>
+                    </div>
+                </div>
+                <div class="maps-container">
+                    <div class="service-frame">
+                        <iframe id="maps-frame" src="http://localhost:8080/static/tactical-map-interface.html" title="Tactical Maps"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Files Section -->
+            <section id="files-section" class="tactical-section">
+                <div class="section-header">
+                    <h2>File Management</h2>
+                    <div class="file-stats">
+                        <span>847GB Available</span>
+                    </div>
+                </div>
+                <div class="files-container">
+                    <div class="service-frame">
+                        <iframe id="files-frame" src="about:blank" title="File Browser"></iframe>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="tactical-footer">
+            <div class="footer-info">
+                <span id="current-time"></span>
+                <span class="separator">|</span>
+                <span id="current-location">Acquiring GPS...</span>
+                <span class="separator">|</span>
+                <span class="network-status">ZeroTier: Connected</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Tactical interface specific JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTacticalInterface();
+        });
+
+        function initializeTacticalInterface() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Initialize navigation
+            setupNavigation();
+            
+            // Load service endpoints
+            loadServiceFrames();
+            
+            // Start location tracking if enabled
+            if (window.tacticalApp && window.tacticalApp.locationService) {
+                window.tacticalApp.locationService.startTracking();
+            }
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = 
+                now.toLocaleTimeString('en-US', { 
+                    hour12: false, 
+                    timeZone: 'UTC',
+                    timeZoneName: 'short'
+                });
+        }
+
+        function setupNavigation() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.tactical-section');
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetSection = btn.dataset.section;
+                    
+                    // Update active nav button
+                    navButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Update active section
+                    sections.forEach(s => s.classList.remove('active'));
+                    document.getElementById(targetSection + '-section').classList.add('active');
+                });
+            });
+        }
+
+        function loadServiceFrames() {
+            // Load service endpoints when sections are accessed
+            const baseUrl = 'https://192.168.100.1';
+            
+            document.getElementById('outline-frame').src = `${baseUrl}/`;
+            document.getElementById('mattermost-frame').src = `${baseUrl}/api/comms/`;
+            document.getElementById('maps-frame').src = `http://localhost:8080/static/tactical-map-interface.html`;
+            document.getElementById('files-frame').src = `${baseUrl}/api/files/`;
+        }
+
+        // Quick action functions
+        function createSitRep() {
+            // Switch to reports section and create new SITREP
+            document.querySelector('[data-section="reports"]').click();
+            setTimeout(() => {
+                createNewReport('SITREP');
+            }, 500);
+        }
+
+        function broadcastMessage() {
+            // Switch to communications and open broadcast
+            document.querySelector('[data-section="comms"]').click();
+        }
+
+        function markWaypoint() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const coords = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        timestamp: Date.now()
+                    };
+                    
+                    // Send waypoint to tactical server
+                    if (window.tacticalApp && window.tacticalApp.locationService) {
+                        window.tacticalApp.locationService.markWaypoint(coords);
+                    }
+                    
+                    alert(`Waypoint marked at: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+                });
+            }
+        }
+
+        function emergencyAlert() {
+            if (confirm('Send emergency alert to all team members?')) {
+                // Send emergency broadcast
+                if (window.tacticalApp && window.tacticalApp.websocket) {
+                    window.tacticalApp.websocket.send(JSON.stringify({
+                        type: 'emergency_alert',
+                        data: {
+                            userId: window.tacticalApp.currentUser,
+                            timestamp: Date.now(),
+                            location: window.tacticalApp.currentLocation
+                        }
+                    }));
+                }
+                alert('Emergency alert sent to all team members');
+            }
+        }
+
+        function createNewReport(type = 'general') {
+            // This would integrate with Outline to create a new document
+            console.log(`Creating new ${type} report`);
+        }
+
+        function centerOnTeam() {
+            // Center map on team members
+            document.querySelector('[data-section="maps"]').click();
+            
+            // Send message to map iframe to center on team
+            const mapFrame = document.getElementById('maps-frame');
+            if (mapFrame && mapFrame.contentWindow) {
+                mapFrame.contentWindow.postMessage({
+                    type: 'center_on_team'
+                }, '*');
+            }
+        }
+
+        function toggleTracking() {
+            const btn = document.getElementById('location-toggle');
+            if (window.tacticalApp && window.tacticalApp.locationService) {
+                if (window.tacticalApp.locationService.isTracking) {
+                    window.tacticalApp.locationService.stopTracking();
+                    btn.innerHTML = '<span class="control-icon">📍</span><span>Location OFF</span>';
+                    btn.classList.remove('location-active');
+                } else {
+                    window.tacticalApp.locationService.startTracking();
+                    btn.innerHTML = '<span class="control-icon">📍</span><span>Location ON</span>';
+                    btn.classList.add('location-active');
+                }
+            }
+        }
+
+        function openFullscreenMap() {
+            // Open map in new window/tab for fullscreen view
+            window.open('http://localhost:8080/static/tactical-map-interface.html', '_blank');
+        }
+
+        function downloadMapRegion() {
+            // Show region download dialog
+            const regions = [
+                'tactical-zone-1',
+                'tactical-zone-2',
+                'base-operations',
+                'training-area-1'
+            ];
+            
+            const region = prompt(`Select region to download:\n${regions.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nEnter number:`);
+            
+            if (region && region >= 1 && region <= regions.length) {
+                const selectedRegion = regions[region - 1];
+                
+                // Initiate download
+                fetch('http://localhost:8080/api/regions/' + selectedRegion + '/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: 'current_user',
+                        deviceId: 'current_device'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(`Download initiated for ${selectedRegion}. Download ID: ${data.downloadId}`);
+                })
+                .catch(error => {
+                    console.error('Download failed:', error);
+                    alert('Failed to initiate download');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
